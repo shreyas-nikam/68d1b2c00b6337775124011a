@@ -1,72 +1,67 @@
 import pytest
-from definition_f4267b44bd844f4cba73e49c3bbc028e import generate_synthetic_data
+from definition_7adc621bd8b141ee81e1f5cf589cdb6e import generate_synthetic_data
 import pandas as pd
 
-def is_valid_dataframe(df):
-    required_columns = ['workflow_id', 'agent_role', 'subtask_id', 'subtask_status',
-                          'subtask_completion_time_s', 'inter_agent_communication_count',
-                          'overall_project_completion_time_s', 'timestamp', 'task_complexity',
-                          'num_specialized_agents', 'orchestration_strategy', 'overall_success_rate']
-    return all(col in df.columns for col in required_columns)
+def is_dataframe(obj):
+    try:
+        return isinstance(obj, pd.DataFrame)
+    except ImportError:
+        return False
 
-
-def is_non_negative(df):
-    numeric_columns = ['subtask_completion_time_s', 'inter_agent_communication_count',
-                         'overall_project_completion_time_s', 'overall_success_rate', 'task_complexity',
-                         'num_specialized_agents']
-    return all((df[col] >= 0).all() for col in numeric_columns if col in df.columns)
-
-
-def has_expected_data_types(df):
-    expected_types = {
-        'workflow_id': 'int64',
-        'subtask_id': 'int64',
-        'subtask_completion_time_s': 'float64',
-        'inter_agent_communication_count': 'int64',
-        'overall_project_completion_time_s': 'float64',
-        'task_complexity': 'int64',
-        'num_specialized_agents': 'int64',
-        'overall_success_rate': 'float64',
-        'orchestration_strategy': 'object',
-        'agent_role': 'object',
-        'subtask_status': 'object',
-        'timestamp': 'datetime64[ns]'
-    }
-    for col, expected_type in expected_types.items():
-        if col in df.columns:
-            if df[col].dtype != expected_types[col]:
-                return False
-    return True
-
-@pytest.mark.parametrize("num_workflows, max_subtasks", [
-    (10, 5),
-    (0, 0),
-    (1, 1),
+@pytest.mark.parametrize("num_workflows, max_subtasks, expected_columns", [
+    (10, 5, ['workflow_id', 'agent_role', 'subtask_id', 'subtask_status', 'subtask_completion_time_s', 'inter_agent_communication_count', 'overall_project_completion_time_s', 'timestamp', 'task_complexity', 'num_specialized_agents', 'orchestration_strategy', 'overall_success_rate']),
+    (0, 5, ['workflow_id', 'agent_role', 'subtask_id', 'subtask_status', 'subtask_completion_time_s', 'inter_agent_communication_count', 'overall_project_completion_time_s', 'timestamp', 'task_complexity', 'num_specialized_agents', 'orchestration_strategy', 'overall_success_rate']),  # Edge case: zero workflows
 ])
-def test_generate_synthetic_data_basic(num_workflows, max_subtasks):
-    df = generate_synthetic_data(num_workflows, max_subtasks)
-    assert isinstance(df, pd.DataFrame)
-    if num_workflows > 0:
-        assert is_valid_dataframe(df)
-        assert len(df) >= 0  # There may be zero rows, but the data frame can be constructed
+def test_generate_synthetic_data_basic(num_workflows, max_subtasks, expected_columns):
+    data = generate_synthetic_data(num_workflows, max_subtasks)
+    if is_dataframe(data):
+        df = data
+        assert isinstance(df, pd.DataFrame)
+        assert all(col in df.columns for col in expected_columns)
+        if num_workflows > 0:
+            assert len(df) > 0
+        else:
+            assert len(df) == 0
     else:
-        assert len(df) == 0
+        assert False, "Expected a Pandas DataFrame"
 
-def test_generate_synthetic_data_valid_data():
-    df = generate_synthetic_data(5, 5)
-    assert is_valid_dataframe(df)
-    assert is_non_negative(df)
-    assert has_expected_data_types(df)
 
-def test_generate_synthetic_data_correct_lengths():
+def test_generate_synthetic_data_max_subtasks():
     num_workflows = 5
-    max_subtasks = 5
+    max_subtasks = 2
     df = generate_synthetic_data(num_workflows, max_subtasks)
-    assert len(df['workflow_id'].unique()) <= num_workflows
+    if is_dataframe(df):
+      assert df['task_complexity'].max() <= max_subtasks
+    else:
+      assert False, "Expected a Pandas DataFrame"
 
-def test_generate_synthetic_data_edge_cases():
-    df = generate_synthetic_data(num_workflows=1, max_subtasks=1)
-    assert isinstance(df, pd.DataFrame)
-    assert is_valid_dataframe(df)
-    assert is_non_negative(df)
-    assert has_expected_data_types(df)
+
+def test_generate_synthetic_data_types():
+    num_workflows = 5
+    max_subtasks = 2
+    df = generate_synthetic_data(num_workflows, max_subtasks)
+    if is_dataframe(df):
+        assert df['workflow_id'].dtype == 'int64'
+        assert df['subtask_id'].dtype == 'int64'
+        assert df['task_complexity'].dtype == 'int64'
+        assert df['num_specialized_agents'].dtype == 'int64'
+        assert df['subtask_completion_time_s'].dtype == 'float64'
+        assert df['overall_project_completion_time_s'].dtype == 'float64'
+        assert df['inter_agent_communication_count'].dtype == 'int64'
+        assert df['overall_success_rate'].dtype == 'float64'
+        assert df['agent_role'].dtype == 'object'
+        assert df['subtask_status'].dtype == 'object'
+        assert df['orchestration_strategy'].dtype == 'object'
+        assert df['timestamp'].dtype == 'datetime64[ns]'
+    else:
+        assert False, "Expected a Pandas DataFrame"
+
+def test_generate_synthetic_data_non_negative_times():
+    num_workflows = 5
+    max_subtasks = 2
+    df = generate_synthetic_data(num_workflows, max_subtasks)
+    if is_dataframe(df):
+        assert (df['subtask_completion_time_s'] >= 0).all()
+        assert (df['overall_project_completion_time_s'] >= 0).all()
+    else:
+        assert False, "Expected a Pandas DataFrame"
