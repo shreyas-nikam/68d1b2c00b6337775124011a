@@ -1,1 +1,56 @@
-# Starter Python file
+
+import streamlit as st
+st.set_page_config(page_title="QuLab", layout="wide")
+st.sidebar.image("https://www.quantuniversity.com/assets/img/logo5.jpg")
+st.sidebar.divider()
+st.title("QuLab")
+st.divider()
+st.markdown("""
+In this lab, we will explore the fundamental concepts of multi-agent orchestration and role specialization within Agentic AI systems. We will use interactive visualizations to understand how complex tasks are efficiently managed through collaborative AI agents. This lab will provide an interactive environment to explore the fundamental concepts of multi-agent orchestration and role specialization within Agentic AI systems.
+
+## Learning Goals
+
+- Understand the key insights contained in the uploaded document and supporting data.
+- Grasp the architectural distinction of Agentic AI as a `system of multiple AI agents collaborating to achieve complex goals` [1].
+- Analyze the benefits of `role specialization` and `orchestration layers` in managing task complexity and improving efficiency [2].
+- Evaluate how different coordination strategies impact `task completion time` and `system robustness` [3].
+
+
+## Scope & Constraints
+
+- The lab must execute end-to-end efficiently.
+- Only open-source Python libraries from PyPI may be used.
+- All major steps need both code comments and brief narrative cells that describe **what** is happening and **why**.
+
+## Dataset Information
+
+A synthetic dataset will simulate multi-agent workflows, including parameters like `task_complexity`, `agent_role`, `inter_agent_communication_count`, `overall_project_completion_time_s`, and `orchestration_strategy`.
+
+## Core Visuals
+
+We will generate three core visuals: a trend plot comparing project completion times for single-agent vs. multi-agent systems, a scatter plot showing communication overhead, and bar charts comparing orchestration strategies.
+
+## User Interaction
+
+Interactive widgets will allow users to adjust `task_type`, `num_specialized_agents`, and `orchestration_strategy` to observe their impact on simulation outcomes.
+
+## How It Explains the Concept
+
+This lab provides a practical demonstration of `multi-agent orchestration` and `role specialization`, which are defining characteristics of Agentic AI systems [1], [2]. By simulating workflows like `automated grant proposal generation` [4] or `cybersecurity incident response` [8], users can observe how dividing a complex goal into smaller, manageable subtasks and assigning them to specialized agents (e.g., a retriever, a summarizer, a planner) can significantly improve `efficiency` and `robustness`. The visual comparison between single-agent and multi-agent approaches, as well as different orchestration strategies, highlights the architectural evolution from `isolated systems to coordinated systems` [9]. The interactivity allows learners to test the concept that the total workflow completion time $T_{workflow}$ in an Agentic AI system can be more efficient due to parallelization and specialized expertise, formally expressed as:
+
+$$T_{workflow} = T_{orchestration} + \max(T_{subtask_1}, T_{subtask_2}, ..., T_{subtask_N})$$
+
+compared to sequential processing by a single agent. This clarifies how Agentic AI transcends the limitations of isolated AI Agents by enabling complex, `distributed intelligence` [10].
+""")
+# Your code starts here
+page = st.sidebar.selectbox(label="Navigation", options=["Page 1", "Page 2", "Page 3"])
+if page == "Page 1":
+    from application_pages.page1 import run_page1
+    run_page1()
+elif page == "Page 2":
+    from application_pages.page2 import run_page2
+    run_page2()
+elif page == "Page 3":
+    from application_pages.page3 import run_page3
+    run_page3()
+# Your code ends
